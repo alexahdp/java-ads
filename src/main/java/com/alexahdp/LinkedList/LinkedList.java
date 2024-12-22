@@ -5,16 +5,17 @@ public class LinkedList<T> {
     private Node<T> head;
     private Node<T> tail;
 
-    public void add(T value) {
+    public Node<T> add(T value) {
+        var newNode = new Node<T>(value, null);
         if (head == null) {
-            head = new Node(value, null);
+            head = newNode;
             tail = head;
         } else {
-            Node newNode = new Node(value, null);
             tail.setNext(newNode);
             tail = newNode;
         }
         counter += 1;
+        return newNode;
     }
 
     @SuppressWarnings("unchecked")
@@ -32,6 +33,46 @@ public class LinkedList<T> {
             i += 1;
         }
         throw new Exception("Impossible situation");
+    }
+
+    public T find(T searchValue) {
+        Node<T> current = head;
+        while (current != null) {
+            if (current.getValue() != null && current.getValue().equals(searchValue)) {
+                return current.getValue();
+            }
+            current = current.getNext();
+        }
+        return null;
+    }
+
+    public Node<T> findAndDelete(T searchValue) {
+        Node<T> current = head;
+        Node<T> prev = null;
+        while (current != null) {
+            if (current.getValue() != null && current.getValue().equals(searchValue)) {
+                if (current == head) {
+                    head = current.getNext();
+                    if (current == tail) {
+                        tail = null;
+                    }
+                }
+                else if (current == tail) {
+                    if (prev != null) {
+                        prev.setNext(null);
+                    } else {
+                        head = null;
+                        tail = null;
+                    }
+                } else {
+                    prev.setNext(current.getNext());
+                }
+                return current;
+            }
+            prev = current;
+            current = current.getNext();
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -56,7 +97,31 @@ public class LinkedList<T> {
         return false;
     }
 
+    public void deleteNode(Node<T> node) {
+        if (node == null) {
+            return;
+        }
+        if (head == node) {
+            head = head.getNext();
+            return;
+        }
+        if (tail == node) {
+            // TODO: Fuck, I need doule-directed linked list!
+        }
+    }
+
     public int size() {
         return counter;
+    }
+
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        Node<T> current = this.head;
+        while (current != null) {
+            if (!result.isEmpty()) result.append(",");
+            result.append(current.getValue());
+            current = current.getNext();
+        }
+        return result.toString();
     }
 }

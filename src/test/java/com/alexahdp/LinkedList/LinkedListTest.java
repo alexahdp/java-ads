@@ -8,7 +8,7 @@ public class LinkedListTest {
 
     @Test
     void createEmptyLinkedList() {
-        LinkedList l = new LinkedList();
+        LinkedList<Integer> l = new LinkedList<Integer>();
         Assertions.assertThat(l.size()).isEqualTo(0);
     }
 
@@ -79,5 +79,63 @@ public class LinkedListTest {
         Assertions.assertThatThrownBy(() -> {
             l.get(2);
         }).isInstanceOf(Exception.class);
+    }
+
+    @Test
+    void toString_1() {
+        var l = new LinkedList<>();
+        Assertions.assertThat(l.toString()).isEqualTo("");
+    }
+
+    @Test
+    void toString_2() {
+        var l = new LinkedList<>();
+        l.add(1);
+        Assertions.assertThat(l.toString()).isEqualTo("1");
+    }
+
+    @Test
+    void toString_3() {
+        var l = new LinkedList<>();
+        l.add(1);
+        l.add(2);
+        l.add(3);
+        Assertions.assertThat(l.toString()).isEqualTo("1,2,3");
+    }
+
+    @Test
+    void findAndDelete_1() {
+        var l = new LinkedList<>();
+        l.add(1);
+        l.findAndDelete(1);
+        Assertions.assertThat(l.toString()).isEqualTo("");
+    }
+
+    @Test
+    void findAndDelete_2() {
+        var l = new LinkedList<>();
+        l.add(1);
+        l.add(2);
+        l.findAndDelete(1);
+        Assertions.assertThat(l.toString()).isEqualTo("2");
+    }
+
+    @Test
+    void findAndDelete_3() {
+        var l = new LinkedList<>();
+        l.add(1);
+        l.add(2);
+        l.findAndDelete(2);
+        Assertions.assertThat(l.toString()).isEqualTo("1");
+    }
+
+    @Test
+    void findAndDelete_4() {
+        var l = new LinkedList<>();
+        l.add(1);
+        l.add(2);
+        l.add(3);
+        l.findAndDelete(2);
+        Assertions.assertThat(l.toString()).isEqualTo("1,3");
     }
 }
