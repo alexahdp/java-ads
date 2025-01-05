@@ -3,6 +3,9 @@ package com.alexahdp.TTLCache;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class TTLCache<T> implements AutoCloseable {
     private static final int DEFAULT_TTL = 1000;
@@ -11,7 +14,7 @@ public class TTLCache<T> implements AutoCloseable {
     private final int period = DEFAULT_PERIOD;
     private int capacity;
     private Long size = 0L;
-    private Thread cleaner;
+    private ScheduledExecutorService scheduledTask;
 
     private final Map<String, CacheItem<T>> cache = new HashMap<String, CacheItem<T>>();
     private PriorityQueue<QueueItem<T>> queue;
@@ -19,15 +22,12 @@ public class TTLCache<T> implements AutoCloseable {
     public TTLCache(int capacity) {
         this.capacity = capacity;
         this.queue = new PriorityQueue<QueueItem<T>>(this.capacity);
-        this.cleaner = new Thread(this::clean);
-        this.cleaner.start();
+        this.scheduledTask = Executors.newScheduledThreadPool( 1) ;
+        scheduledTask.scheduleWithFixedDelay(this::clean, this.period, this.period, TimeUnit.MILLISECONDS);
     }
 
     public TTLCache() {
-        this.capacity = 10;
-        this.queue = new PriorityQueue<QueueItem<T>>(this.capacity);
-        this.cleaner = new Thread(this::clean);
-        this.cleaner.start();
+        this(10);
     }
 
     public void add(String key, T value) {
@@ -35,7 +35,7 @@ public class TTLCache<T> implements AutoCloseable {
     }
 
     public synchronized void close() {
-        this.cleaner.interrupt();
+        this.scheduledTask.shutdown();
     }
 
     public synchronized void add(String key, T value, int ttl) {
@@ -78,21 +78,13 @@ public class TTLCache<T> implements AutoCloseable {
     }
 
     private void clean() {
-        while (true) {
-            try {
-                Thread.sleep(this.period);
-                // take lock on this
-                synchronized(this) {
-                    while (
-                        this.queue.size() > 0 && this.queue.peek().ttl() <= System.currentTimeMillis()
-                    ) {
-                        QueueItem<T> item = this.queue.poll();
-                        this.cache.remove(item.key());
-                        this.size -= 1;
-                    }
-                }
-            } catch (InterruptedException e) {
-                // do nothing, it's time to stop
+        synchronized(this) {
+            while (
+                this.queue.size() > 0 && this.queue.peek().ttl() <= System.currentTimeMillis()
+            ) {
+                QueueItem<T> item = this.queue.poll();
+                this.cache.remove(item.key());
+                this.size -= 1;
             }
         }
     }

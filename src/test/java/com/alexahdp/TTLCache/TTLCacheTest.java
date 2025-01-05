@@ -9,6 +9,10 @@ public class TTLCacheTest {
     @Test
     void create() {
         try (var cache = new TTLCache<Integer>()) {
+            int a = 20;
+            String b = "30";
+            String c = a + b;
+            System.out.println(c);
             Assertions.assertThat(cache.getSize()).isEqualTo(0);
         }
     }
